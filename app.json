@@ -1,0 +1,28 @@
+{
+  "expo": {
+    "name": "AgroGest",
+    "slug": "agrogest",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "scheme": "agrogest",
+    "plugins": [
+      "expo-router"
+    ],
+    "android": {
+      "package": "com.agrogest.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#F6F8F4"
+      }
+    },
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "2ca8b551-71a9-4599-9806-1cb130e5e5ae"
+      }
+    }
+  }
+}
