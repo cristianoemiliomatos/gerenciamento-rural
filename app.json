@@ -4,7 +4,13 @@
     "slug": "agrogest",
     "version": "0.1.0",
     "orientation": "portrait",
+    "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FFFFFF"
+    },
     "scheme": "agrogest",
     "plugins": [
       "expo-router"
@@ -12,7 +18,8 @@
     "android": {
       "package": "com.agrogest.app",
       "adaptiveIcon": {
-        "backgroundColor": "#F6F8F4"
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#FFFFFF"
       }
     },
     "experiments": {
