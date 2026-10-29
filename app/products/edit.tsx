@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, Text } from 'react-native-paper';
 
 import { ProductForm } from '@/components/ProductForm';
+import { AppHeader } from '@/components/AppHeader';
 import { PageContainer } from '@/components/PageContainer';
 import { getProduct, updateProduct } from '@/database/repositories/stockRepository';
 import type { Product, ProductDraft } from '@/types/stock';
@@ -22,14 +23,16 @@ export default function EditProductScreen() {
     description: product.description ?? '', manufacturer: product.manufacturer ?? '', supplier: product.supplier ?? '',
     unit: product.unit, minimumStock: product.minimumStock, notes: product.notes ?? '',
   } : undefined;
+  const productForSubmit = product;
 
   return (
     <PageContainer>
-      <Stack.Screen options={{ headerShown: true, title: 'Editar produto' }} />
+      <Stack.Screen options={{ headerShown: false }} />
+      <AppHeader title="Editar insumo" subtitle="Atualize as informações do produto" back />
       {error ? <Text accessibilityRole="alert">{error}</Text> : null}
       {!product && !error ? <ActivityIndicator accessibilityLabel="Carregando produto" /> : null}
-      {initialValue ? <ProductForm initialValue={initialValue} submitLabel="Salvar alterações" onSubmit={async (draft) => {
-        await updateProduct(product.id, draft);
+      {initialValue && productForSubmit ? <ProductForm initialValue={initialValue} submitLabel="Salvar alterações" onSubmit={async (draft) => {
+        await updateProduct(productForSubmit.id, draft);
         router.back();
       }} /> : null}
     </PageContainer>

@@ -4,6 +4,7 @@ import { StyleSheet, View } from 'react-native';
 import { ActivityIndicator, Button, Card, Chip, Divider, Text } from 'react-native-paper';
 
 import { PageContainer } from '@/components/PageContainer';
+import { AppHeader } from '@/components/AppHeader';
 import { getProduct, listLots, listMovements } from '@/database/repositories/stockRepository';
 import type { Lot, Product, StockMovement } from '@/types/stock';
 
@@ -36,7 +37,8 @@ export default function ProductDetailsScreen() {
 
   return (
     <PageContainer>
-      <Stack.Screen options={{ headerShown: true, title: product.name }} />
+      <Stack.Screen options={{ headerShown: false }} />
+      <AppHeader title={product.name} subtitle="Detalhes do insumo" back actionIcon="pencil-outline" onAction={() => router.push({ pathname: '/products/edit', params: { productId: product.id } })} />
       <View style={styles.topActions}>
         <Button mode="outlined" icon="pencil" onPress={() => router.push({ pathname: '/products/edit', params: { productId: product.id } })}>Editar</Button>
         <Button mode="contained" icon="plus" onPress={() => router.push({ pathname: '/movements/new', params: { productId: product.id, type: 'entry' } })}>Entrada</Button>

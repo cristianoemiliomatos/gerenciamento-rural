@@ -1,30 +1,31 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
+import { palette } from '@/constants/theme';
 
 const tabIcons = {
   index: 'home-outline',
   estoque: 'cube-outline',
-  aplicacoes: 'leaf-outline',
-  relatorios: 'bar-chart-outline',
+  aplicacoes: 'map-outline',
+  relatorios: 'wallet-outline',
   mais: 'menu-outline',
 } as const;
 
 export default function TabLayout() {
   return (
     <Tabs screenOptions={({ route }) => ({
-      headerTitleAlign: 'left',
-      tabBarActiveTintColor: '#2F6B3B',
-      tabBarInactiveTintColor: '#596057',
-      tabBarLabelStyle: { fontSize: 12, fontWeight: '600' },
-      tabBarStyle: { minHeight: 64, paddingTop: 5 },
+      headerShown: false,
+      tabBarActiveTintColor: palette.green,
+      tabBarInactiveTintColor: '#78908A',
+      tabBarLabelStyle: { fontSize: 10, fontWeight: '700', marginBottom: 3 },
+      tabBarStyle: { backgroundColor: '#FFFFFF', borderTopColor: palette.border, height: 70, paddingTop: 7 },
       tabBarIcon: ({ color, size }) => (
-        <Ionicons name={tabIcons[route.name as keyof typeof tabIcons]} color={color} size={size} />
+        <Ionicons name={tabIcons[route.name as keyof typeof tabIcons]} color={typeof color === 'string' ? color : palette.green} size={size} />
       ),
     })}>
       <Tabs.Screen name="index" options={{ title: 'Início', tabBarAccessibilityLabel: 'Início' }} />
-      <Tabs.Screen name="estoque" options={{ title: 'Estoque', tabBarAccessibilityLabel: 'Estoque' }} />
-      <Tabs.Screen name="aplicacoes" options={{ title: 'Aplicações', tabBarAccessibilityLabel: 'Aplicações' }} />
-      <Tabs.Screen name="relatorios" options={{ title: 'Relatórios', tabBarAccessibilityLabel: 'Relatórios' }} />
+      <Tabs.Screen name="estoque" options={{ title: 'Insumos', tabBarAccessibilityLabel: 'Insumos' }} />
+      <Tabs.Screen name="aplicacoes" options={{ title: 'Talhões', tabBarAccessibilityLabel: 'Talhões' }} />
+      <Tabs.Screen name="relatorios" options={{ title: 'Gastos', tabBarAccessibilityLabel: 'Gastos' }} />
       <Tabs.Screen name="mais" options={{ title: 'Mais', tabBarAccessibilityLabel: 'Mais opções' }} />
     </Tabs>
   );

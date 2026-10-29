@@ -1,6 +1,8 @@
 import type { SQLiteDatabase } from 'expo-sqlite';
+import { Platform } from 'react-native';
 
 import { getDatabase } from '@/database/database';
+import { demoCreateProduct, demoGetProduct, demoListLots, demoListMovements, demoListProducts, demoRecordConsumption, demoRecordEntry, demoReverseMovement, demoUpdateProduct } from '@/database/demoRepository';
 import { isExpired, roundQuantity, weightedAverageCost } from '@/features/stock/costing';
 import {
   type Lot,
@@ -85,6 +87,7 @@ async function categoryIdForName(database: Queryable, categoryName: string): Pro
 }
 
 export async function createProduct(draft: ProductDraft): Promise<Product> {
+  if (Platform.OS === 'web') return demoCreateProduct(draft);
   const database = await getDatabase();
   const name = requiredText(draft.name, 'Nome do produto');
   const unit = requiredText(draft.unit, 'Unidade de medida');
@@ -112,6 +115,7 @@ export async function createProduct(draft: ProductDraft): Promise<Product> {
 }
 
 export async function updateProduct(productId: string, draft: ProductDraft): Promise<Product> {
+  if (Platform.OS === 'web') return demoUpdateProduct(productId, draft);
   const database = await getDatabase();
   const name = requiredText(draft.name, 'Nome do produto');
   const unit = requiredText(draft.unit, 'Unidade de medida');
@@ -136,6 +140,7 @@ export async function updateProduct(productId: string, draft: ProductDraft): Pro
 }
 
 export async function listProducts(includeInactive = false): Promise<Product[]> {
+  if (Platform.OS === 'web') return demoListProducts();
   const database = await getDatabase();
   const products = await database.getAllAsync<ProductRow>(`
     SELECT p.id, p.name, p.category_id AS categoryId, c.name AS categoryName,
@@ -151,10 +156,12 @@ export async function listProducts(includeInactive = false): Promise<Product[]> 
 }
 
 export async function getProduct(productId: string): Promise<Product> {
+  if (Platform.OS === 'web') return demoGetProduct(productId);
   return findProduct(await getDatabase(), productId);
 }
 
 export async function listLots(productId: string): Promise<Lot[]> {
+  if (Platform.OS === 'web') return demoListLots(productId);
   const database = await getDatabase();
   return database.getAllAsync<LotRow>(`
     SELECT id, product_id AS productId, code, manufacturer, supplier,
@@ -167,6 +174,7 @@ export async function listLots(productId: string): Promise<Lot[]> {
 }
 
 export async function listMovements(productId?: string): Promise<StockMovement[]> {
+  if (Platform.OS === 'web') return demoListMovements(productId);
   const database = await getDatabase();
   const movements = await database.getAllAsync<MovementRow>(`
     SELECT m.id, m.product_id AS productId, p.name AS productName, m.lot_id AS lotId,
@@ -184,6 +192,7 @@ export async function listMovements(productId?: string): Promise<StockMovement[]
 }
 
 export async function recordEntry(input: StockEntryInput): Promise<void> {
+  if (Platform.OS === 'web') return demoRecordEntry(input);
   const database = await getDatabase();
   const quantity = positiveNumber(input.quantity, 'Quantidade');
   const unitCost = positiveNumber(input.unitCost, 'Custo unitário', true);
@@ -235,6 +244,7 @@ export async function recordEntry(input: StockEntryInput): Promise<void> {
 }
 
 export async function recordConsumption(input: StockConsumptionInput): Promise<void> {
+  if (Platform.OS === 'web') return demoRecordConsumption(input);
   const database = await getDatabase();
   const quantity = positiveNumber(input.quantity, 'Quantidade');
   const occurredAt = validDate(input.occurredAt, 'Data da movimentação');
@@ -293,6 +303,7 @@ export async function recordConsumption(input: StockConsumptionInput): Promise<v
 }
 
 export async function reverseMovement(movementId: string, occurredAt = new Date().toISOString()): Promise<void> {
+  if (Platform.OS === 'web') return demoReverseMovement(movementId);
   const database = await getDatabase();
   validDate(occurredAt, 'Data do estorno');
 

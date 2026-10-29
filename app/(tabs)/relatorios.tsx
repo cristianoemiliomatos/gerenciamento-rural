@@ -1,17 +1,29 @@
-import { router } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useMemo, useState } from 'react';
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Text } from 'react-native-paper';
 
+import { AppHeader } from '@/components/AppHeader';
 import { EmptyState } from '@/components/EmptyState';
 import { PageContainer } from '@/components/PageContainer';
+import { StatusPill } from '@/components/StatusPill';
+import { palette } from '@/constants/theme';
+import { listExpenses } from '@/database/repositories/farmRepository';
+import { expenseCategories, type Expense, type ExpenseCategory } from '@/types/farm';
+
+const money = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+const filters: ('Todos' | ExpenseCategory)[] = ['Todos', ...expenseCategories];
 
 export default function ReportsScreen() {
-  return (
-    <PageContainer>
-      <EmptyState
-        title="Relatórios em preparação"
-        description="Na Fase 4, os relatórios usarão somente dados reais do aplicativo e poderão ser exportados em CSV."
-        actionLabel="Voltar ao início"
-        onAction={() => router.replace('/(tabs)')}
-      />
-    </PageContainer>
-  );
+  const [expenses, setExpenses] = useState<Expense[]>([]); const [loading, setLoading] = useState(true); const [error, setError] = useState<string>(); const [filter, setFilter] = useState<'Todos' | ExpenseCategory>('Todos');
+  const load = useCallback(async () => { setLoading(true); try { setExpenses(await listExpenses()); setError(undefined); } catch (loadError) { setError(loadError instanceof Error ? loadError.message : 'Não foi possível carregar os gastos.'); } finally { setLoading(false); } }, []);
+  useFocusEffect(useCallback(() => { void load(); }, [load]));
+  const visibleExpenses = useMemo(() => filter === 'Todos' ? expenses : expenses.filter((expense) => expense.category === filter), [expenses, filter]); const total = visibleExpenses.reduce((sum, expense) => sum + expense.amount, 0); const byPlot = visibleExpenses.reduce<Record<string, number>>((totals, expense) => ({ ...totals, [expense.plotName]: (totals[expense.plotName] || 0) + expense.amount }), {});
+
+  return <PageContainer><AppHeader title="Gastos" subtitle="Custos associados aos seus talhões" actionIcon="calendar-outline" /><View style={styles.totalCard}><View><Text style={styles.totalLabel}>Total registrado</Text><Text style={styles.totalValue}>{money.format(total)}</Text><Text style={styles.totalHint}>{visibleExpenses.length} lançamento(s)</Text></View><View style={styles.totalIcon}><Ionicons name="cash-outline" size={25} color={palette.green} /></View></View><View style={styles.filters}>{filters.map((item) => <TouchableOpacity key={item} onPress={() => setFilter(item)} style={[styles.filter, filter === item && styles.filterActive]}><Text style={[styles.filterText, filter === item && styles.filterTextActive]}>{item}</Text></TouchableOpacity>)}</View>{error ? <EmptyState title="Não foi possível carregar" description={error} actionLabel="Tentar novamente" onAction={() => void load()} /> : null}{loading ? <ActivityIndicator accessibilityLabel="Carregando gastos" /> : null}{!loading && !error && expenses.length === 0 ? <EmptyState title="Nenhum gasto registrado" description="Adicione um gasto e associe-o a um talhão e, se quiser, a um produto do estoque." actionLabel="Adicionar gasto" onAction={() => router.push('/expenses/new')} /> : null}{!loading && !error && expenses.length > 0 ? <><View style={styles.plotSummary}><Text style={styles.sectionTitle}>Resumo por talhão</Text>{Object.entries(byPlot).map(([plotName, amount]) => <View key={plotName} style={styles.plotRow}><Text style={styles.plotName}>{plotName}</Text><Text style={styles.plotAmount}>{money.format(amount)}</Text></View>)}</View><Text style={styles.sectionTitle}>Lançamentos recentes</Text><View style={styles.list}>{visibleExpenses.map((expense) => <ExpenseRow key={expense.id} expense={expense} />)}</View></> : null}<TouchableOpacity style={styles.action} onPress={() => router.push('/expenses/new')}><Ionicons name="add" size={19} color="#FFFFFF" /><Text style={styles.actionText}>Adicionar gasto</Text></TouchableOpacity></PageContainer>;
 }
+
+function ExpenseRow({ expense }: { expense: Expense }) { return <View style={styles.row}><View style={styles.expenseIcon}><Ionicons name={expense.category === 'Combustível' ? 'water-outline' : 'receipt-outline'} size={19} color={palette.green} /></View><View style={styles.copy}><Text style={styles.description}>{expense.description}</Text><Text style={styles.meta}>{expense.plotName} · {expense.productName || expense.category}</Text><Text style={styles.date}>{new Date(`${expense.expenseDate}T12:00:00`).toLocaleDateString('pt-BR')}</Text></View><View style={styles.amount}><Text style={styles.amountText}>{money.format(expense.amount)}</Text><StatusPill label={expense.category} tone={expense.category === 'Combustível' ? 'warning' : 'success'} /></View></View>; }
+
+const styles = StyleSheet.create({ totalCard: { alignItems: 'center', backgroundColor: palette.mint, borderRadius: 16, flexDirection: 'row', justifyContent: 'space-between', padding: 16 }, totalLabel: { color: palette.muted, fontSize: 12 }, totalValue: { color: palette.darkGreen, fontSize: 25, fontWeight: '800', marginTop: 3 }, totalHint: { color: palette.muted, fontSize: 10, marginTop: 3 }, totalIcon: { alignItems: 'center', backgroundColor: '#FFFFFFAA', borderRadius: 24, height: 48, justifyContent: 'center', width: 48 }, filters: { flexDirection: 'row', flexWrap: 'wrap', gap: 7 }, filter: { backgroundColor: '#FFFFFF', borderColor: palette.border, borderRadius: 15, borderWidth: 1, paddingHorizontal: 10, paddingVertical: 7 }, filterActive: { backgroundColor: palette.green, borderColor: palette.green }, filterText: { color: palette.muted, fontSize: 10, fontWeight: '700' }, filterTextActive: { color: '#FFFFFF' }, plotSummary: { backgroundColor: '#FFFFFF', borderColor: palette.border, borderRadius: 15, borderWidth: 1, padding: 13 }, sectionTitle: { color: palette.darkGreen, fontSize: 16, fontWeight: '800' }, plotRow: { borderBottomColor: palette.border, borderBottomWidth: 1, flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 10 }, plotName: { color: palette.muted, fontSize: 12 }, plotAmount: { color: palette.darkGreen, fontSize: 12, fontWeight: '800' }, list: { backgroundColor: '#FFFFFF', borderColor: palette.border, borderRadius: 16, borderWidth: 1, overflow: 'hidden' }, row: { alignItems: 'center', borderBottomColor: palette.border, borderBottomWidth: 1, flexDirection: 'row', gap: 10, minHeight: 82, paddingHorizontal: 12 }, expenseIcon: { alignItems: 'center', backgroundColor: palette.mint, borderRadius: 20, height: 40, justifyContent: 'center', width: 40 }, copy: { flex: 1 }, description: { color: palette.darkGreen, fontSize: 13, fontWeight: '800' }, meta: { color: palette.muted, fontSize: 10, marginTop: 3 }, date: { color: palette.muted, fontSize: 10, marginTop: 3 }, amount: { alignItems: 'flex-end', gap: 5 }, amountText: { color: palette.darkGreen, fontSize: 12, fontWeight: '800' }, action: { alignItems: 'center', backgroundColor: palette.green, borderRadius: 13, flexDirection: 'row', gap: 8, justifyContent: 'center', minHeight: 48 }, actionText: { color: '#FFFFFF', fontSize: 13, fontWeight: '800' } });

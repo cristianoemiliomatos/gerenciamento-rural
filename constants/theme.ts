@@ -2,27 +2,40 @@ import { MD3LightTheme, type MD3Theme } from 'react-native-paper';
 
 export const appTheme: MD3Theme = {
   ...MD3LightTheme,
-  roundness: 12,
+  roundness: 16,
   colors: {
     ...MD3LightTheme.colors,
-    primary: '#2F6B3B',
+    primary: '#08785C',
     onPrimary: '#FFFFFF',
-    primaryContainer: '#D8EBD7',
-    onPrimaryContainer: '#173A20',
-    secondary: '#526453',
-    secondaryContainer: '#DCE8DA',
-    onSecondaryContainer: '#263526',
-    tertiary: '#765A22',
-    surface: '#FBFCF8',
-    surfaceVariant: '#E7EAE4',
-    onSurface: '#1A1C19',
-    onSurfaceVariant: '#43483F',
-    outline: '#73796E',
+    primaryContainer: '#D9F2E6',
+    onPrimaryContainer: '#064A38',
+    secondary: '#4C665D',
+    secondaryContainer: '#E4F1EB',
+    onSecondaryContainer: '#17352B',
+    tertiary: '#A2710B',
+    surface: '#FFFFFF',
+    surfaceVariant: '#F1F6F3',
+    onSurface: '#12332D',
+    onSurfaceVariant: '#60736E',
+    outline: '#D7E4DF',
     error: '#B3261E',
   },
 };
 
 export const layout = {
-  screenPadding: 20,
-  contentGap: 16,
+  screenPadding: 16,
+  contentGap: 14,
+} as const;
+
+export const palette = {
+  background: '#F4F8F6',
+  card: '#FFFFFF',
+  green: '#08785C',
+  darkGreen: '#064A38',
+  mint: '#E4F6ED',
+  muted: '#60736E',
+  border: '#E0ECE7',
+  warning: '#F0A51A',
+  danger: '#E34B4B',
+  purple: '#8467D9',
 } as const;

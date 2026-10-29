@@ -105,6 +105,41 @@ const migrations: Migration[] = [
         ('00000000-0000-4000-8000-000000000005', 'Outro', CURRENT_TIMESTAMP);
     `,
   },
+  {
+    version: 2,
+    name: 'create_plots_and_expenses',
+    sql: `
+      CREATE TABLE IF NOT EXISTS plots (
+        id TEXT PRIMARY KEY NOT NULL,
+        name TEXT NOT NULL COLLATE NOCASE,
+        area_hectares REAL NOT NULL CHECK (area_hectares > 0),
+        crop TEXT,
+        notes TEXT,
+        is_active INTEGER NOT NULL DEFAULT 1 CHECK (is_active IN (0, 1)),
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+      );
+
+      CREATE UNIQUE INDEX IF NOT EXISTS plots_name_unique ON plots(name);
+
+      CREATE TABLE IF NOT EXISTS expenses (
+        id TEXT PRIMARY KEY NOT NULL,
+        description TEXT NOT NULL,
+        amount REAL NOT NULL CHECK (amount > 0),
+        expense_date TEXT NOT NULL,
+        category TEXT NOT NULL CHECK (category IN ('Insumos', 'Combustível', 'Manutenção', 'Mão de obra', 'Outros')),
+        plot_id TEXT NOT NULL REFERENCES plots(id),
+        product_id TEXT REFERENCES products(id),
+        notes TEXT,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+      );
+
+      CREATE INDEX IF NOT EXISTS expenses_plot_date_idx ON expenses(plot_id, expense_date DESC);
+      CREATE INDEX IF NOT EXISTS expenses_product_date_idx ON expenses(product_id, expense_date DESC);
+      CREATE INDEX IF NOT EXISTS expenses_date_idx ON expenses(expense_date DESC);
+    `,
+  },
 ];
 
 export async function runMigrations(database: SQLiteDatabase): Promise<void> {

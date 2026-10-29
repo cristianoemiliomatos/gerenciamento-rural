@@ -1,17 +1,23 @@
-import { router } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useState } from 'react';
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Text } from 'react-native-paper';
 
+import { AppHeader } from '@/components/AppHeader';
 import { EmptyState } from '@/components/EmptyState';
 import { PageContainer } from '@/components/PageContainer';
+import { palette } from '@/constants/theme';
+import { listPlots } from '@/database/repositories/farmRepository';
+import type { Plot } from '@/types/farm';
 
 export default function ApplicationsScreen() {
-  return (
-    <PageContainer>
-      <EmptyState
-        title="Aplicações em preparação"
-        description="Na Fase 3, você registrará aplicações por propriedade, talhão e cultura, com baixa de estoque e custo calculados juntos."
-        actionLabel="Ver estoque"
-        onAction={() => router.push('/(tabs)/estoque')}
-      />
-    </PageContainer>
-  );
+  const [plots, setPlots] = useState<Plot[]>([]); const [loading, setLoading] = useState(true); const [error, setError] = useState<string>();
+  const load = useCallback(async () => { setLoading(true); try { setPlots(await listPlots()); setError(undefined); } catch (loadError) { setError(loadError instanceof Error ? loadError.message : 'Não foi possível carregar os talhões.'); } finally { setLoading(false); } }, []);
+  useFocusEffect(useCallback(() => { void load(); }, [load]));
+  const totalArea = plots.reduce((total, plot) => total + plot.areaHectares, 0);
+
+  return <PageContainer><AppHeader title="Talhões" subtitle="Áreas e culturas da propriedade" actionIcon="search-outline" /><View style={styles.summary}><View><Text style={styles.summaryLabel}>Área total cadastrada</Text><Text style={styles.summaryValue}>{totalArea.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} ha</Text></View><View style={styles.summaryIcon}><Ionicons name="map-outline" size={24} color={palette.green} /></View></View><View style={styles.heading}><Text style={styles.title}>Seus talhões</Text><Text style={styles.count}>{plots.length} cadastrados</Text></View>{error ? <EmptyState title="Não foi possível carregar" description={error} actionLabel="Tentar novamente" onAction={() => void load()} /> : null}{loading ? <ActivityIndicator accessibilityLabel="Carregando talhões" /> : null}{!loading && !error && plots.length === 0 ? <EmptyState title="Nenhum talhão cadastrado" description="Cadastre uma área para poder associar gastos e acompanhar o custo por hectare." actionLabel="Adicionar talhão" onAction={() => router.push('/plots/new')} /> : null}<View style={styles.list}>{plots.map((plot) => <TouchableOpacity key={plot.id} style={styles.card} onPress={() => router.push({ pathname: '/expenses/new', params: { plotId: plot.id } })}><View style={styles.plotIcon}><Ionicons name="leaf" size={21} color={palette.green} /></View><View style={styles.copy}><Text style={styles.name}>{plot.name}</Text><Text style={styles.meta}>{plot.areaHectares} ha  ·  {plot.crop || 'Cultura não informada'}</Text><Text style={styles.link}>Adicionar gasto neste talhão</Text></View><Ionicons name="chevron-forward" size={19} color={palette.muted} /></TouchableOpacity>)}</View><TouchableOpacity style={styles.action} onPress={() => router.push('/plots/new')}><Ionicons name="add" size={18} color="#FFFFFF" /><Text style={styles.actionText}>Adicionar talhão</Text></TouchableOpacity></PageContainer>;
 }
+
+const styles = StyleSheet.create({ summary: { alignItems: 'center', backgroundColor: palette.mint, borderRadius: 16, flexDirection: 'row', justifyContent: 'space-between', padding: 16 }, summaryLabel: { color: palette.muted, fontSize: 12 }, summaryValue: { color: palette.darkGreen, fontSize: 24, fontWeight: '800', marginTop: 3 }, summaryIcon: { alignItems: 'center', backgroundColor: '#FFFFFFAA', borderRadius: 22, height: 44, justifyContent: 'center', width: 44 }, heading: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' }, title: { color: palette.darkGreen, fontSize: 16, fontWeight: '800' }, count: { color: palette.muted, fontSize: 11 }, list: { backgroundColor: '#FFFFFF', borderColor: palette.border, borderRadius: 16, borderWidth: 1, overflow: 'hidden' }, card: { alignItems: 'center', borderBottomColor: palette.border, borderBottomWidth: 1, flexDirection: 'row', gap: 11, minHeight: 88, paddingHorizontal: 13 }, plotIcon: { alignItems: 'center', backgroundColor: palette.mint, borderRadius: 20, height: 40, justifyContent: 'center', width: 40 }, copy: { flex: 1 }, name: { color: palette.darkGreen, fontSize: 13, fontWeight: '800' }, meta: { color: palette.muted, fontSize: 10, marginTop: 4 }, link: { color: palette.green, fontSize: 10, fontWeight: '700', marginTop: 5 }, action: { alignItems: 'center', backgroundColor: palette.green, borderRadius: 13, flexDirection: 'row', gap: 8, justifyContent: 'center', minHeight: 48 }, actionText: { color: '#FFFFFF', fontSize: 13, fontWeight: '800' } });

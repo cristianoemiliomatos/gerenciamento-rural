@@ -1,4 +1,5 @@
 import { createContext, type PropsWithChildren, useCallback, useContext, useEffect, useState } from 'react';
+import { Platform } from 'react-native';
 
 import { getDatabase, resetDatabaseConnection } from '@/database/database';
 
@@ -11,14 +12,16 @@ type DatabaseContextValue = {
 const DatabaseContext = createContext<DatabaseContextValue | undefined>(undefined);
 
 export function DatabaseProvider({ children }: PropsWithChildren) {
-  const [isReady, setIsReady] = useState(false);
+  const [isReady, setIsReady] = useState(Platform.OS === 'web');
   const [error, setError] = useState<Error | null>(null);
   const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     let isMounted = true;
-    setIsReady(false);
-    setError(null);
+
+    if (Platform.OS === 'web') {
+      return () => { isMounted = false; };
+    }
 
     getDatabase()
       .then(() => {
@@ -37,6 +40,8 @@ export function DatabaseProvider({ children }: PropsWithChildren) {
 
   const retry = useCallback(() => {
     resetDatabaseConnection();
+    setIsReady(false);
+    setError(null);
     setAttempt((value) => value + 1);
   }, []);
 

@@ -1,14 +1,14 @@
-import { render, screen } from '@testing-library/react-native';
+import { render } from '@testing-library/react-native';
 import { PaperProvider } from 'react-native-paper';
 
 import { EmptyState } from '@/components/EmptyState';
 import { appTheme } from '@/constants/theme';
 
 describe('EmptyState', () => {
-  it('explica o próximo passo e expõe uma ação acessível', () => {
+  it('explica o próximo passo e expõe uma ação acessível', async () => {
     const onAction = jest.fn();
 
-    render(
+    const { getByText, getByLabelText } = await render(
       <PaperProvider theme={appTheme}>
         <EmptyState
           title="Sem produtos"
@@ -19,7 +19,7 @@ describe('EmptyState', () => {
       </PaperProvider>,
     );
 
-    expect(screen.getByText('Sem produtos')).toBeTruthy();
-    expect(screen.getByLabelText('Cadastrar produto')).toBeTruthy();
+    expect(getByText('Sem produtos')).toBeTruthy();
+    expect(getByLabelText('Cadastrar produto')).toBeTruthy();
   });
 });

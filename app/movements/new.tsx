@@ -4,6 +4,7 @@ import { StyleSheet, View } from 'react-native';
 import { Button, Divider, HelperText, Menu, RadioButton, SegmentedButtons, Text, TextInput } from 'react-native-paper';
 
 import { PageContainer } from '@/components/PageContainer';
+import { AppHeader } from '@/components/AppHeader';
 import { listLots, listProducts, recordConsumption, recordEntry } from '@/database/repositories/stockRepository';
 import type { ExpirationKind, Lot, Product, StockMovementType } from '@/types/stock';
 
@@ -38,7 +39,7 @@ export default function NewMovementScreen() {
 
   useEffect(() => { listProducts().then(setProducts).catch((loadError: unknown) => setError(loadError instanceof Error ? loadError.message : 'Não foi possível carregar os produtos.')); }, []);
   useEffect(() => {
-    if (!productId) { setLots([]); return; }
+    if (!productId) return;
     listLots(productId).then(setLots).catch((loadError: unknown) => setError(loadError instanceof Error ? loadError.message : 'Não foi possível carregar os lotes.'));
   }, [productId]);
 
@@ -69,7 +70,8 @@ export default function NewMovementScreen() {
 
   return (
     <PageContainer>
-      <Stack.Screen options={{ headerShown: true, title: movementTitle }} />
+      <Stack.Screen options={{ headerShown: false }} />
+      <AppHeader title={movementType === 'entry' ? 'Adicionar insumo' : movementTitle} subtitle="Registre uma nova movimentação" back />
       <Text variant="bodyMedium">Cada confirmação atualiza o saldo e cria um registro permanente no histórico.</Text>
       <SegmentedButtons value={movementType} onValueChange={(value) => { setMovementType(value as MovementKind); setLotId(undefined); }} buttons={[
         { value: 'entry', label: 'Entrada' }, { value: 'exit', label: 'Saída' }, { value: 'loss', label: 'Perda' },

@@ -1,24 +1,31 @@
+import { Ionicons } from '@expo/vector-icons';
 import { StyleSheet, View } from 'react-native';
-import { Text, useTheme } from 'react-native-paper';
+import { Text } from 'react-native-paper';
+
+import { palette } from '@/constants/theme';
 
 type MetricCardProps = {
   label: string;
   value: string;
   description: string;
+  icon?: keyof typeof Ionicons.glyphMap;
+  tone?: 'green' | 'yellow' | 'purple' | 'red';
 };
 
-export function MetricCard({ label, value, description }: MetricCardProps) {
-  const theme = useTheme();
+export function MetricCard({ label, value, description, icon = 'cube-outline', tone = 'green' }: MetricCardProps) {
+  const backgrounds = { green: '#DDF5E9', yellow: '#FFF1D0', purple: '#EDE7FF', red: '#FCE5E5' };
+  const iconColors = { green: palette.green, yellow: '#C58500', purple: palette.purple, red: palette.danger };
 
   return (
     <View
       accessibilityRole="summary"
       accessibilityLabel={`${label}: ${value}. ${description}`}
-      style={[styles.card, { borderColor: theme.colors.outlineVariant }]}
+      style={[styles.card, { backgroundColor: backgrounds[tone] }]}
     >
-      <Text variant="labelLarge">{label}</Text>
-      <Text variant="headlineSmall" style={styles.value}>{value}</Text>
-      <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>{description}</Text>
+      <View style={styles.icon}><Ionicons name={icon} size={17} color={iconColors[tone]} /></View>
+      <Text variant="labelSmall" style={styles.label}>{label}</Text>
+      <Text variant="titleLarge" style={styles.value}>{value}</Text>
+      <Text variant="bodySmall" style={styles.description}>{description}</Text>
     </View>
   );
 }
@@ -26,12 +33,13 @@ export function MetricCard({ label, value, description }: MetricCardProps) {
 const styles = StyleSheet.create({
   card: {
     borderRadius: 14,
-    borderWidth: 1,
-    gap: 6,
-    minHeight: 118,
-    padding: 16,
+    gap: 5,
+    minHeight: 112,
+    padding: 12,
+    width: '48%',
   },
-  value: {
-    fontWeight: '700',
-  },
+  icon: { alignItems: 'center', backgroundColor: '#FFFFFFAA', borderRadius: 12, height: 30, justifyContent: 'center', width: 30 },
+  label: { color: palette.muted, fontWeight: '600' },
+  value: { color: palette.darkGreen, fontWeight: '800' },
+  description: { color: palette.muted, fontSize: 10 },
 });
